@@ -58,7 +58,7 @@ PAUSED = False
 
 # player settings
 PLAYER_GRAV = 0.9
-PLAYER_FRIC = 0.1
+PLAYER_FRIC = 1
 SCORE = 0
 
 # define colors
