@@ -57,8 +57,8 @@ mpos = (0,0)
 PAUSED = False
 
 # player settings
-PLAYER_GRAV = 0.9
-PLAYER_FRIC = 1
+PLAYER_GRAV = 0.98
+PLAYER_FRIC = 11
 SCORE = 0
 
 # define colors
