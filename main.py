@@ -34,7 +34,7 @@ from math import *
 from time import *
 # new comment....
 vec = pg.math.Vector2
-
+asdfasdf
 # setup asset folders here - images sounds etc.
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'images')
