@@ -2,7 +2,6 @@
 WIDTH = 1280
 HEIGHT = 720
 FPS = 30
-mpos = (0,0)
 PAUSED = False
 
 # player settings

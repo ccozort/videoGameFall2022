@@ -34,6 +34,8 @@ class Player(Sprite):
         self.jumppower = 25
         self.fired = False
         self.jumps = 2
+        self.mpos = (0,0)
+
     def controls(self):
         keys = pg.key.get_pressed()
         # if keys[pg.K_w]:
@@ -48,15 +50,14 @@ class Player(Sprite):
             self.fire()
     def fire(self):
         self.cd.event_time = floor(pg.time.get_ticks()/1000)
-        mpos = pg.mouse.get_pos()
-        targetx = mpos[0]
-        targety = mpos[1]
+        self.mpos = pg.mouse.get_pos()
+        targetx = self.mpos[0]
+        targety = self.mpos[1]
         distance_x = targetx - self.rect.x
         distance_y = targety - self.rect.y
         angle = atan2(distance_y, distance_x)
         speed_x = 10 * cos(angle)
         speed_y = 10 * sin(angle)
-        # print(speed_x)
         if self.cd.delta > 2:
             p = Pewpew(self.pos.x,self.pos.y - self.rect.height, 30, 30, speed_x, speed_y, "player")
         else:
@@ -74,7 +75,6 @@ class Player(Sprite):
         if self.jumps > 0:
             self.vel.y = -self.jumppower
             self.jumps -=1
-            print(self.jumps)
     def draw(self):
         pass
     def inbounds(self):
@@ -84,24 +84,15 @@ class Player(Sprite):
             self.pos.x = WIDTH
     def update(self):
         self.cd.ticking()
-        # print(f"current time: {self.cd.current_time} button press time: {self.cd.event_time} delta time {self.cd.delta}")
 
         self.acc = vec(0,PLAYER_GRAV)
         self.controls()
-        # friction
         self.acc.x += self.vel.x * -0.1
-        # self.acc.y += self.vel.y * -0.1
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
-        # self.rect.x += self.xvel
-        # self.rect.y += self.yvel
         self.inbounds()
         self.rect.midbottom = self.pos
-    # def draw(self):
-    #     pass
 
-
-# platforms
 class Platform(Sprite):
     def __init__(self, x, y, w, h, typeof):
         Sprite.__init__(self)
@@ -158,14 +149,11 @@ class Pewpew(Sprite):
         if self.owner == "player":
             self.rect.x += self.speed_x
             self.rect.y += self.speed_y
-            # print(pewpews)
         else:
             self.rect.y += self.speed_y
         if (self.rect.y < 0 or self.rect.y > HEIGHT):
             self.kill()
-            # print(pewpews)
 
-# here's the healthbar
 class Healthbar(Sprite):
     def __init__(self, x, y, w, h):
         Sprite.__init__(self)
@@ -177,7 +165,6 @@ class Healthbar(Sprite):
     def damage(self, newwidth):
         self.rect.w = newwidth
 
-# here's the mobs
 class Mob(Sprite):
     def __init__(self, game, x, y, w, h, color, typeof, health):
         Sprite.__init__(self)
@@ -235,13 +222,11 @@ class Particle(Sprite):
         self.speedy = randint(2,20)*choice([-1,1])
         self.cd = Cooldown()
         self.cd.event_time = floor(pg.time.get_ticks()/1000)
-        print('created a particle')
     def update(self):
         self.cd.ticking()
         self.rect.x += self.speedx
         self.rect.y += self.speedy+PLAYER_GRAV
         if self.cd.delta > 1:
-            print('time to die...')
             self.kill()
 
 
