@@ -34,7 +34,7 @@ from math import *
 from time import *
 # new comment....
 vec = pg.math.Vector2
-asdfasdf
+
 # setup asset folders here - images sounds etc.
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'images')
@@ -50,13 +50,6 @@ theBell_rect = background.get_rect()
 theBell.set_colorkey(BLACK)
 theBell = pg.transform.scale(theBell, (200,200))
 
-def draw_text(text, size, color, x, y):
-        font_name = pg.font.match_font('arial')
-        font = pg.font.Font(font_name, size)
-        text_surface = font.render(text, True, color)
-        text_rect = text_surface.get_rect()
-        text_rect.midtop = (x, y)
-        g.screen.blit(text_surface, text_rect)
 
 def colorbyte(x,y):
     if x < 0 or x > 255:
@@ -80,6 +73,7 @@ class Game:
         # self.load_data()
     def new(self):
         self.player = Player(self)
+        self.score = 0
         # create groups
         self.all_sprites = pg.sprite.Group()
         self.all_plats = pg.sprite.Group()
@@ -107,87 +101,22 @@ class Game:
         self.all_sprites.add(self.player, self.plat, self.plat2, self.ground, self.powerup1)
         self.powerups.add(self.powerup1)
         self.all_plats.add(self.plat, self.plat2, self.ground)
-
-
-# init game
-
-g = Game()
-g.new()
-
-############################# Game loop ###########################################
-# starts timer...
-start_ticks = pg.time.get_ticks()
-
-running = True
-while running:
-    delta = g.clock.tick(FPS)
-    # print(clock.get_time())
-    # keep the loop running using clock
-    hits = pg.sprite.spritecollide(g.player, g.all_plats, False)
-    if hits:
-        # if hits[0].typeof == "ouchie":
-        #     print("yikes I'm dead...")
-        # if hits[0].typeof == "lava":
-        #     print("I'm standing on the LAVA...")
-        # if hits[0].typeof == "ouchie":
-        #     print("yikes I'm dead...")
-        # print("ive struck a plat")
-        g.player.pos.y = hits[0].rect.top
-        g.player.vel.y = 0
-
-    for p in g.powerups:
-        powerUphit = pg.sprite.spritecollide(g.player, g.powerups, True)
-        if powerUphit:
-            
-            print("i got a powerup...")
-            g.player.jumppower += 10
-
-    for p in g.enemyPewpews:
-        playerhit = pg.sprite.spritecollide(g.player, g.enemyPewpews, True)
-        if playerhit:
-            for i in range(3):
-                particle = Particle(playerhit[0].rect.x, playerhit[0].rect.y, randint(1,3), randint(1,3))
-                g.all_sprites.add(particle)
-            print('the player has been hit')
-            g.player.health -= 1
-
-    for p in g.pewpews:
-        mhit = pg.sprite.spritecollide(p, g.mobs, False)
-        # print(mhit.keys())
-        if mhit:
-            if p.rect.width > 10:
-                mhit[0].currenthealth -= 5
-            else:
-                mhit[0].currenthealth -= 1
-            for i in range(3):
-                    particle = Particle(mhit[0].rect.x, mhit[0].rect.y, randint(1,3), randint(1,3))
-                    g.all_sprites.add(particle)
-            print("mob health is " + str(mhit[0].health))
-            if mhit[0].currenthealth < 1:
-                for i in range(30):
-                    particle = Particle(mhit[0].rect.x, mhit[0].rect.y, randint(1,7), randint(1,7))
-                    g.all_sprites.add(particle)
-                mhit[0].kill()
-                SCORE += 1
-                
-        # if mhit:
-        #     print('hit mob ' + str(mhit[0]))
-    
-    mobhits = pg.sprite.spritecollide(g.player, g.mobs, True)
-
-    if mobhits:
-        # print("ive struck a mob")
-        g.player.health -= 1
-        if g.player.r < 255:
-            g.player.r += 15 
-
-    for event in pg.event.get():
-        # check for closed window
-        if event.type == pg.QUIT:
-            running = False
-        # check for mouse
-        if event.type == pg.MOUSEBUTTONUP:
-            g.player.fire()
+        self.run()
+    def run(self):
+        self.playing = True
+        while self.playing:
+            self.delta = self.clock.tick(FPS)
+            self.events()
+            self.update()
+            self.draw()
+    def events(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                if self.playing:
+                    self.playing = False
+                self.running = False
+            if event.type == pg.MOUSEBUTTONUP:
+                self.player.fire()
                 
             # get a list of all sprites that are under the mouse cursor
             # clicked_sprites = [s for s in mobs if s.rect.collidepoint(mpos)]
@@ -198,48 +127,86 @@ while running:
             #         SCORE += 1
 
             # print(clicked_sprites)k 
-        # check for keys
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_p:
-                if PAUSED:
-                    PAUSED = False
-                else:
-                    PAUSED = True
-            if event.key == pg.K_SPACE:
-                g.player.jump()
-
-    if not PAUSED:  
-        ############ Update ##############
-        # update all sprites
-        g.all_sprites.update()
-        ############ Draw ################
-        # draw the background screen
+            # check for keys
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_p:
+                    if PAUSED:
+                        PAUSED = False
+                    else:
+                        PAUSED = True
+                if event.key == pg.K_SPACE:
+                    self.player.jump()
         
-        g.screen.fill(BLACK)
-        # screen.blit(background, background_rect)
-        # screen.blit(theBell, ((WIDTH/2), HEIGHT/2))
-    
+        hits = pg.sprite.spritecollide(g.player, g.all_plats, False)
+        if hits:
+            self.player.pos.y = hits[0].rect.top
+            self.player.vel.y = 0
 
+        for p in self.powerups:
+            powerUphit = pg.sprite.spritecollide(self.player, self.powerups, True)
+            if powerUphit:
+                print("i got a powerup...")
+                self.player.jumppower += 10
 
-    # draw text
-    draw_text("FPS: " + str(delta), 22, RED, 64, HEIGHT / 24)
-    # draw_text("Timer: " + str(seconds), 22, RED, 64, HEIGHT / 10)
-    draw_text("SCORE: " + str(SCORE), 22, WHITE, WIDTH / 2, HEIGHT / 24)
-    draw_text("HEALTH: " + str(g.player.health), 22, WHITE, WIDTH / 2, HEIGHT / 10)
-    # pg.draw.polygon(screen,BROWN,[(player.rect.x, player.rect.y), (152, 230), (1056, 230),(1056, 190)])
-    
-    # draw player color
-    # player.image.fill((player.r,player.g,player.b))
+        for p in self.enemyPewpews:
+            playerhit = pg.sprite.spritecollide(self.player, self.enemyPewpews, True)
+            if playerhit:
+                for i in range(3):
+                    particle = Particle(playerhit[0].rect.x, playerhit[0].rect.y, randint(1,3), randint(1,3))
+                    self.all_sprites.add(particle)
+                print('the player has been hit')
+                self.player.health -= 1
 
-    if not PAUSED:
+        for p in self.pewpews:
+            mhit = pg.sprite.spritecollide(p, self.mobs, False)
+            # print(mhit.keys())
+            if mhit:
+                if p.rect.width > 10:
+                    mhit[0].currenthealth -= 5
+                else:
+                    mhit[0].currenthealth -= 1
+                for i in range(3):
+                        particle = Particle(mhit[0].rect.x, mhit[0].rect.y, randint(1,3), randint(1,3))
+                        self.all_sprites.add(particle)
+                print("mob health is " + str(mhit[0].health))
+                if mhit[0].currenthealth < 1:
+                    for i in range(30):
+                        particle = Particle(mhit[0].rect.x, mhit[0].rect.y, randint(1,7), randint(1,7))
+                        self.all_sprites.add(particle)
+                    mhit[0].kill()
+                    self.score += 1
+        mobhits = pg.sprite.spritecollide(g.player, g.mobs, True)
 
-        # draw all sprites
-        g.all_sprites.draw(g.screen)
-        for m in g.mobs:
-            g.screen.blit(m.healthbar, m.rect)
-        pg.draw.circle(g.player.image, (YELLOW), g.player.rect.center, g.player.cd.delta)
+        if mobhits:
+            self.player.health -= 1
+            if self.player.r < 255:
+                self.player.r += 15 
 
-    # buffer - after drawing everything, flip display
-    pg.display.flip()
+        
+    def update(self):
+        self.all_sprites.update()
+    def draw(self):
+        self.screen.fill(BLACK)
+        draw_text(self.screen, "FPS: " + str(self.delta), 22, RED, 64, HEIGHT / 24)
+        draw_text(self.screen, "SCORE: " + str(self.score), 22, WHITE, WIDTH / 2, HEIGHT / 24)
+        draw_text(self.screen, "HEALTH: " + str(self.player.health), 22, WHITE, WIDTH / 2, HEIGHT / 10)
+        self.all_sprites.draw(self.screen)
+        for m in self.mobs:
+            self.screen.blit(m.healthbar, m.rect)
+        pg.draw.circle(self.player.image, (YELLOW), self.player.rect.center, self.player.cd.delta)
+        pg.display.flip()
+
+    def show_start_screen():
+        pass    
+    def show_go_screen():
+        pass    
+
+g = Game()
+print(g.running)
+
+############################# Game loop ###########################################
+while g.running:
+    g.new()
+    g.show_go_screen()
 
 pg.quit()
