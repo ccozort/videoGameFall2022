@@ -26,6 +26,7 @@ import os
 from os import path
 from math import *
 from time import *
+
 vec = pg.math.Vector2
 game_folder = os.path.dirname(__file__)
 img_folder = os.path.join(game_folder, 'images')
@@ -36,6 +37,7 @@ theBell = pg.image.load(path.join(img_folder, 'theBell.png'))
 theBell_rect = background.get_rect()
 theBell.set_colorkey(BLACK)
 theBell = pg.transform.scale(theBell, (200,200))
+
 class Game:
     def __init__(self):
         # initialize game window, etc
@@ -140,6 +142,7 @@ class Game:
             if self.player.r < 255:
                 self.player.r += 15 
     def update(self):
+        # pass
         self.all_sprites.update()
     def draw(self):
         self.screen.fill(BLACK)
